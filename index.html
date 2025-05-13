@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML转JPG工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #canvas {
+            display: none;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-input-wrapper input[type="file"] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-input-wrapper .file-input-btn {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            text-align: center;
+        }
+        .file-input-wrapper .file-input-btn:hover {
+            background-color: #2563eb;
+        }
+        #htmlContent {
+            border-radius: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="max-w-[800px] w-full bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold text-center mb-6">HTML转JPG工具</h1>
+        
+        <div class="file-input-wrapper mb-4">
+            <button class="file-input-btn">选择HTML文件</button>
+            <input type="file" id="fileInput" accept=".html" />
+        </div>
+        
+        <div id="fileName" class="text-sm text-gray-600 mb-4"></div>
+        
+        <div class="flex space-x-2 mb-4">
+            <button onclick="convertToJPG()" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">转换为JPG</button>
+            <a id="downloadLink" download="output.jpg" class="flex-1 bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 cursor-not-allowed">下载JPG</a>
+        </div>
+        
+        <div id="htmlContent" class="border border-gray-300 p-4 min-h-[200px] bg-gray-50 mb-6"></div>
+        
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const fileNameDiv = document.getElementById('fileName');
+            if (file && file.type === 'text/html') {
+                fileNameDiv.textContent = `已选择文件: ${file.name}`;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    document.getElementById('htmlContent').innerHTML = content;
+                };
+                reader.readAsText(file);
+            } else {
+                fileNameDiv.textContent = '';
+                alert('请上传有效的HTML文件。');
+            }
+        });
+
+        function convertToJPG() {
+            const htmlContent = document.getElementById('htmlContent');
+            if (!htmlContent.innerHTML) {
+                alert('没有HTML内容可转换。请先上传HTML文件。');
+                return;
+            }
+
+            html2canvas(htmlContent, {
+                scale: 2,
+                useCORS: true
+            }).then(canvas => {
+                document.getElementById('canvas').replaceWith(canvas);
+                const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = imgData;
+                downloadLink.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                downloadLink.classList.add('bg-green-500', 'hover:bg-green-600');
+            }).catch(err => {
+                console.error('转换JPG失败:', err);
+                alert('转换HTML到JPG失败。请重试。');
+            });
+        }
+    </script>
+</body>
+</html>
